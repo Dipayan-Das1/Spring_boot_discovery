@@ -1,0 +1,11 @@
+server:
+  port: 9000
+spring:
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/Dipayan-Das1/cloud-config-repository
+          searchPaths: '{application}'
+          username: Dipayan-Das1
+          password: Kolkata@20081987

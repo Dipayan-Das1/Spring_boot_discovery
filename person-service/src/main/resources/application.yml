@@ -18,6 +18,10 @@ management:
   endpoint:
     health:
       show-details: "ALWAYS"
+  endpoints:
+    web:
+      exposure:
+        include: "*"
 
 
 #default project info followed by actual injected pom-specified values.
@@ -31,6 +35,9 @@ info:
     name: ${project.name}
     description: ${project.description}
     version: ${project.version}
+  app:
+    java:
+      source: 1.8
 
 user.service:
   name: 'default profile:'
