@@ -14,11 +14,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import spring.edu.ms.app.personservice.dto.MessageDto;
 import spring.edu.ms.app.personservice.dto.PersonDto;
 import spring.edu.ms.app.personservice.service.PersonService;
 
+@Api(description = "CRUD API for Person Resource")
 @Slf4j
 @RestController
 @RequestMapping(path = "/v1/person")
@@ -27,15 +32,17 @@ public class PersonController {
 	@Autowired
 	private PersonService personService;
 
+	@ApiOperation(value = "Get person by passing UUID")	
 	@GetMapping(path = "/{uuid}", produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
 	public PersonDto getPerson(@PathVariable String uuid) {
 		log.info(String.format("Get person with %s",uuid));
 		return personService.getPerson(uuid);
 	}
 
+	@ApiOperation(value = "Get List of persons")
 	@GetMapping(produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
-	public List<PersonDto> getPersons(@RequestParam(name = "page", defaultValue = "1") int page,
-			@RequestParam(name = "size", defaultValue = "10") int size) {
+	public List<PersonDto> getPersons(@ApiParam(name = "page",allowEmptyValue = true,allowableValues = "values greater than equal to 1") @RequestParam(name = "page", defaultValue = "1") int page,
+			@ApiParam(name = "size",allowEmptyValue = true,allowableValues = "values greater than equal to 1") @RequestParam(name = "size", defaultValue = "10") int size) {
 		log.info(String.format("Get persons with page %d and size %d",page,size));
 		if(size < 0)
 			throw new IllegalArgumentException("Page size cannot be negative");
@@ -44,6 +51,7 @@ public class PersonController {
 		return personService.getPersons(size, page);
 	}
 
+	@ApiOperation(value = "Create Person")
 	@PostMapping(consumes = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE }, produces = {
 			MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
 	@ResponseStatus(HttpStatus.CREATED)
@@ -53,6 +61,7 @@ public class PersonController {
 		return new MessageDto(String.format("Person with uuid %s created successfully", request.getUuid()));
 	}
 
+	@ApiOperation(value = "Update Person identified by UUID passed")
 	@PutMapping(path = "/{uuid}", consumes = { MediaType.APPLICATION_JSON_VALUE,
 			MediaType.APPLICATION_XML_VALUE }, produces = { MediaType.APPLICATION_JSON_VALUE,
 					MediaType.APPLICATION_XML_VALUE })
@@ -63,6 +72,7 @@ public class PersonController {
 		return request;
 	}
 
+	@ApiOperation(value = "Delete Person identified by UUID passed")
 	@DeleteMapping(path = "/{uuid}", produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
 	public MessageDto deletePerson(@PathVariable String uuid) {
 		log.info("Delete person");
