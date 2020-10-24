@@ -1,4 +1,4 @@
-package spring.edu.ms.app.vehicleregistrationapp.remote.client;
+package spring.edu.ms.app.vehicleregistrationapp.remote;
 
 import java.util.Map;
 

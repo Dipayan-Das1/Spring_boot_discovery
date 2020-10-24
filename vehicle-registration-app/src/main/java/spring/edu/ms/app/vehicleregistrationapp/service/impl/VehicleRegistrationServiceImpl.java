@@ -10,17 +10,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+
+import lombok.extern.slf4j.Slf4j;
 import spring.edu.ms.app.vehicleregistrationapp.domain.StateRegistrationEntity;
 import spring.edu.ms.app.vehicleregistrationapp.domain.VehicleRegistrationEntity;
 import spring.edu.ms.app.vehicleregistrationapp.dto.MessageDto;
 import spring.edu.ms.app.vehicleregistrationapp.dto.VehicleRegistrationDto;
 import spring.edu.ms.app.vehicleregistrationapp.exception.RegistrationNotFoundException;
 import spring.edu.ms.app.vehicleregistrationapp.exception.RegistrationProcessingException;
-import spring.edu.ms.app.vehicleregistrationapp.remote.client.PersonServiceClient;
+import spring.edu.ms.app.vehicleregistrationapp.remote.PersonRemoteService;
 import spring.edu.ms.app.vehicleregistrationapp.repository.StateRegistrationRepository;
 import spring.edu.ms.app.vehicleregistrationapp.repository.VehicleRegistrationRepository;
 import spring.edu.ms.app.vehicleregistrationapp.service.VehicleRegistrationService;
 
+@Slf4j
 @Service
 public class VehicleRegistrationServiceImpl implements VehicleRegistrationService {
 
@@ -31,7 +35,7 @@ public class VehicleRegistrationServiceImpl implements VehicleRegistrationServic
 	private StateRegistrationRepository stateRegRepository;
 	
 	@Autowired
-	private PersonServiceClient personServiceClient;
+	private PersonRemoteService personRemoteService;
 
 	@Override
 	public VehicleRegistrationDto getVehicleDetails(String registrationId) {
@@ -98,58 +102,46 @@ public class VehicleRegistrationServiceImpl implements VehicleRegistrationServic
 					"Vehicle number with chassis number %s is already registered", createDetails.getChassisNumber()));
 		}
 
-		
 		StateRegistrationEntity stateRegdetails = stateRegRepository.findByState(createDetails.getRegistartionState());
 		if (stateRegdetails == null) {
 			throw new RegistrationProcessingException(
 					"Registration not possible for state " + createDetails.getRegistartionState());
 		}
-		
-		Map<String,String> personDetails = personServiceClient.getPerson(createDetails.getSsn(), "ssn");
-		
-		personDetails.forEach((key,val) -> {
-			System.out.println(key+" -> "+val);
-		});
-		
-		String personuuid = personDetails.get("uuid");
-		///verify here if user exists or not
-		
+
 		registration = new VehicleRegistrationEntity();
 		BeanUtils.copyProperties(createDetails, registration);
 		registration.setRegistrationId(getRegistrationId(stateRegdetails));
-		registration.setOwnerUUID(personuuid);
-		
+
+		personRemoteService.setPersonUUID(createDetails.getSsn(), registration);
 		vehicleRegistrationRepo.save(registration);
-		
+
 		stateRegRepository.save(stateRegdetails);
 
 		BeanUtils.copyProperties(registration, createDetails);
-		
-		MessageDto message = new MessageDto("Registration created with id "+registration.getRegistrationId(), LocalDateTime.now());
-		
+
+		MessageDto message = new MessageDto("Registration created with id " + registration.getRegistrationId(),
+				LocalDateTime.now());
+
 		return message;
 	}
-	
-	
-	private String getRegistrationId(StateRegistrationEntity stateRegdetails)
-	{
+
+
+
+	private String getRegistrationId(StateRegistrationEntity stateRegdetails) {
 		String regId = stateRegdetails.getNextRegistrationId();
-		
+
 		String[] regComponents = regId.split("-");
 		Integer serial = Integer.parseInt(regComponents[2]);
 		Integer serial2 = Integer.parseInt(regComponents[1]);
-		if(serial < 9999)
-		{
+		if (serial < 9999) {
 			++serial;
-		}
-		else
-		{
+		} else {
 			serial = 1;
 			++serial2;
 		}
-		
-		stateRegdetails.setNextRegistrationId(String.format("%s-%03d-%04d", regComponents[0],serial2,serial));
-		
+
+		stateRegdetails.setNextRegistrationId(String.format("%s-%03d-%04d", regComponents[0], serial2, serial));
+
 		return regId;
 	}
 

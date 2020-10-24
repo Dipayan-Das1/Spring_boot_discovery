@@ -46,4 +46,6 @@ public class VehicleRegistrationEntity {
 	public LocalDateTime creationTime;
 	@UpdateTimestamp
 	public LocalDateTime updateTime;
+	@Column
+	public Boolean isCompleted = true;
 }

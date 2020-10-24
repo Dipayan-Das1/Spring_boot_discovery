@@ -2,6 +2,7 @@ package spring.edu.ms.app.vehicleregistrationapp.service;
 
 import java.util.List;
 
+import spring.edu.ms.app.vehicleregistrationapp.domain.VehicleRegistrationEntity;
 import spring.edu.ms.app.vehicleregistrationapp.dto.MessageDto;
 import spring.edu.ms.app.vehicleregistrationapp.dto.VehicleRegistrationDto;
 
