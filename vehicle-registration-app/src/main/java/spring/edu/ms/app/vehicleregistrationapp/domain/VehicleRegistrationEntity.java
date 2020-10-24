@@ -39,7 +39,7 @@ public class VehicleRegistrationEntity {
 	@Column
 	public String modelDetails;
 	@Column(nullable = false,unique=true)
-	public Long chassisNumber;
+	public String chassisNumber;
 	@Column(nullable = false)
 	public String registartionState;
 	@CreationTimestamp

@@ -1,17 +1,22 @@
 package spring.edu.ms.app.vehicleregistrationapp.service.impl;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import spring.edu.ms.app.vehicleregistrationapp.domain.StateRegistrationEntity;
 import spring.edu.ms.app.vehicleregistrationapp.domain.VehicleRegistrationEntity;
+import spring.edu.ms.app.vehicleregistrationapp.dto.MessageDto;
 import spring.edu.ms.app.vehicleregistrationapp.dto.VehicleRegistrationDto;
 import spring.edu.ms.app.vehicleregistrationapp.exception.RegistrationNotFoundException;
 import spring.edu.ms.app.vehicleregistrationapp.exception.RegistrationProcessingException;
+import spring.edu.ms.app.vehicleregistrationapp.remote.client.PersonServiceClient;
 import spring.edu.ms.app.vehicleregistrationapp.repository.StateRegistrationRepository;
 import spring.edu.ms.app.vehicleregistrationapp.repository.VehicleRegistrationRepository;
 import spring.edu.ms.app.vehicleregistrationapp.service.VehicleRegistrationService;
@@ -24,6 +29,9 @@ public class VehicleRegistrationServiceImpl implements VehicleRegistrationServic
 
 	@Autowired
 	private StateRegistrationRepository stateRegRepository;
+	
+	@Autowired
+	private PersonServiceClient personServiceClient;
 
 	@Override
 	public VehicleRegistrationDto getVehicleDetails(String registrationId) {
@@ -79,28 +87,37 @@ public class VehicleRegistrationServiceImpl implements VehicleRegistrationServic
 	}
 
 	@Override
-	public VehicleRegistrationDto createRegistration(VehicleRegistrationDto createDetails) {
+	@Transactional(readOnly = false)
+	public MessageDto createRegistration(VehicleRegistrationDto createDetails) {
 
 		VehicleRegistrationEntity registration = vehicleRegistrationRepo
 				.findByChassisNumber(createDetails.getChassisNumber());
 
-		if (registration == null) {
+		if (registration != null) {
 			throw new RegistrationProcessingException(String.format(
 					"Vehicle number with chassis number %s is already registered", createDetails.getChassisNumber()));
 		}
 
-		StateRegistrationEntity stateRegdetails = stateRegRepository.findByState(createDetails.getState());
+		
+		StateRegistrationEntity stateRegdetails = stateRegRepository.findByState(createDetails.getRegistartionState());
 		if (stateRegdetails == null) {
 			throw new RegistrationProcessingException(
-					"Registration not possible for state " + createDetails.getState());
+					"Registration not possible for state " + createDetails.getRegistartionState());
 		}
 		
+		Map<String,String> personDetails = personServiceClient.getPerson(createDetails.getSsn(), "ssn");
+		
+		personDetails.forEach((key,val) -> {
+			System.out.println(key+" -> "+val);
+		});
+		
+		String personuuid = personDetails.get("uuid");
 		///verify here if user exists or not
 		
 		registration = new VehicleRegistrationEntity();
 		BeanUtils.copyProperties(createDetails, registration);
 		registration.setRegistrationId(getRegistrationId(stateRegdetails));
-		
+		registration.setOwnerUUID(personuuid);
 		
 		vehicleRegistrationRepo.save(registration);
 		
@@ -108,8 +125,11 @@ public class VehicleRegistrationServiceImpl implements VehicleRegistrationServic
 
 		BeanUtils.copyProperties(registration, createDetails);
 		
-		return createDetails;
+		MessageDto message = new MessageDto("Registration created with id "+registration.getRegistrationId(), LocalDateTime.now());
+		
+		return message;
 	}
+	
 	
 	private String getRegistrationId(StateRegistrationEntity stateRegdetails)
 	{

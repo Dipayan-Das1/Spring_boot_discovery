@@ -20,7 +20,6 @@ public class PersonControllerAdvice {
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageDto(iae.getMessage()));
 	}
 
-	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	@ExceptionHandler(PersonNotFoundException.class)
 	public ResponseEntity<MessageDto> handleException(PersonNotFoundException pnfe) {
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageDto(pnfe.getMessage()));

@@ -33,11 +33,12 @@ public class PersonController {
 	private PersonService personService;
 
 	@ApiOperation(value = "Get person by passing UUID")	
-	@GetMapping(path = "/{uuid}", produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
-	public PersonDto getPerson(@PathVariable String uuid) {
-		log.info(String.format("Get person with %s",uuid));
-		return personService.getPerson(uuid);
+	@GetMapping(path = "/{identifier}", produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
+	public PersonDto getPerson(@PathVariable String identifier,@RequestParam(name = "qualifiertype",defaultValue = "uuid") String qualifierType) {
+		log.info(String.format("Get person with %s",identifier));
+		return personService.getPerson(identifier,qualifierType);
 	}
+	
 
 	@ApiOperation(value = "Get List of persons")
 	@GetMapping(produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
@@ -76,7 +77,7 @@ public class PersonController {
 	@DeleteMapping(path = "/{uuid}", produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
 	public MessageDto deletePerson(@PathVariable String uuid) {
 		log.info("Delete person");
-		personService.getPerson(uuid);
+		personService.deletePerson(uuid);
 		return new MessageDto(String.format("Person with uuid %s deleted successfully", uuid));
 	}
 

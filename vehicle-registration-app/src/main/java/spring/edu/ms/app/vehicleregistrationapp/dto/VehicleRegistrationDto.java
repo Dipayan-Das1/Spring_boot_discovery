@@ -18,5 +18,4 @@ public class VehicleRegistrationDto {
 	public String modelDetails;
 	public String chassisNumber;
 	public String registartionState;
-	public String state;
 }

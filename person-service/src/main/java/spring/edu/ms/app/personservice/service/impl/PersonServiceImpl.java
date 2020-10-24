@@ -42,7 +42,7 @@ public class PersonServiceImpl implements PersonService {
 	@Transactional(readOnly = false)
 	public PersonDto updatePerson(PersonDto model) {
 		log.info("Update person invoked");
-		Person person = getPersonBuUUID(model.getUuid());
+		Person person = getPersonByUUID(model.getUuid());
 		BeanUtils.copyProperties(model, person);
 		personRepository.save(person);
 		return model;
@@ -50,9 +50,22 @@ public class PersonServiceImpl implements PersonService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public PersonDto getPerson(String uuid) {
+	public PersonDto getPerson(String identifier,String qualifierType) {
 		log.info("Get person invoked");
-		Person person = getPersonBuUUID(uuid);
+		Person person = null;
+		if("uuid".equalsIgnoreCase(qualifierType))
+		{
+			person = getPersonByUUID(identifier);	
+		}
+		else if("ssn".equalsIgnoreCase(qualifierType))
+		{
+			person = getPersonBySSN(identifier);
+		}
+		else
+		{
+			throw new IllegalArgumentException("Invalid identifier passed");
+		}
+		
 		PersonDto model = new PersonDto();
 		BeanUtils.copyProperties(person, model);
 		return model;
@@ -62,14 +75,22 @@ public class PersonServiceImpl implements PersonService {
 	@Transactional(readOnly = false)
 	public void deletePerson(String uuid) {
 		log.info("Get person invoked");
-		Person person = getPersonBuUUID(uuid);
+		Person person = getPersonByUUID(uuid);
 		personRepository.delete(person);
 	}
 
-	private Person getPersonBuUUID(String uuid) {
+	private Person getPersonByUUID(String uuid) {
 		Person person = personRepository.findByUuid(uuid);
 		if (person == null) {
 			throw PersonNotFoundException.personNotfoundByUUID(uuid);
+		}
+		return person;
+	}
+	
+	private Person getPersonBySSN(String ssn) {
+		Person person = personRepository.findBySsn(ssn);
+		if (person == null) {
+			throw PersonNotFoundException.personNotfoundBySSN(ssn);
 		}
 		return person;
 	}

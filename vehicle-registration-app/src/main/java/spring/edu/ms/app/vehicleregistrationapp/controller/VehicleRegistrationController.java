@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import spring.edu.ms.app.vehicleregistrationapp.dto.MessageDto;
 import spring.edu.ms.app.vehicleregistrationapp.dto.VehicleRegistrationDto;
 import spring.edu.ms.app.vehicleregistrationapp.service.VehicleRegistrationService;
 
@@ -24,10 +25,10 @@ public class VehicleRegistrationController {
 	@PostMapping
 	@ResponseBody
 	@ResponseStatus(HttpStatus.CREATED)
-	public VehicleRegistrationDto create(@RequestBody VehicleRegistrationDto vehicle)
+	public MessageDto create(@RequestBody VehicleRegistrationDto vehicle)
 	{
-		vehicle = vehicleRegistrationService.createRegistration(vehicle);
-		return vehicle;
+		MessageDto message = vehicleRegistrationService.createRegistration(vehicle);
+		return message;
 	}
 	
 	@GetMapping("/{registrationId}")

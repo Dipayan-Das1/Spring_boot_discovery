@@ -10,7 +10,7 @@ public interface PersonService {
 
 	PersonDto updatePerson(PersonDto model);
 
-	PersonDto getPerson(String uuid);
+	PersonDto getPerson(String uuid,String qualifierType);
 	
 	List<PersonDto> getPersons(int size,int page);
 

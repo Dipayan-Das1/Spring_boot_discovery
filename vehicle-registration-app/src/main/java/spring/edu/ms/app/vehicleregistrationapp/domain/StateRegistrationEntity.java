@@ -16,7 +16,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(name="VEHICLE_REGISTARTION")
+@Table(name="STATE_REGISTARTION_METADATA")
 public class StateRegistrationEntity {
 
 	@Id

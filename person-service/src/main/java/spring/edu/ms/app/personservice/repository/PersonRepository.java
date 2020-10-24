@@ -9,5 +9,5 @@ import spring.edu.ms.app.personservice.domain.Person;
 public interface PersonRepository extends PagingAndSortingRepository<Person,Long> {
 	Person findByLastName(String lastName);
 	Person findByUuid(String uuid);
-
+	Person findBySsn(String ssn);
 }
